@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; //  So ist es richtig!
+import 'dart:convert'; // Wichtig für das Speichern der Spieler-Liste
 
 void main() {
   runApp(const SkajoApp());
