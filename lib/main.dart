@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // Wichtig für das Speichern der Spieler-Liste
+import 'dart:convert';
 
 void main() {
-  runApp(const SkajoApp());
+  runApp(const SkyoApp());
 }
 
-class SkajoApp extends StatelessWidget {
-  const SkajoApp({super.key});
+class SkyoApp extends StatelessWidget {
+  const SkyoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Skajo Ewige Kasse',
+      title: 'Skyo Ewige Kasse',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.teal,
@@ -22,7 +22,7 @@ class SkajoApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.grey[100],
       ),
-      home: const SkajoBlockDashboard(),
+      home: const SkyoBlockDashboard(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -30,11 +30,10 @@ class SkajoApp extends StatelessWidget {
 
 class Player {
   String name;
-  double totalWallet; // Das angesammelte Geld aus ALLEN vorherigen Spielen
+  double totalWallet;
 
   Player({required this.name, this.totalWallet = 0.0});
 
-  // Für das Speichern in den SharedPreferences
   Map<String, dynamic> toJson() => {'name': name, 'totalWallet': totalWallet};
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
@@ -43,17 +42,16 @@ class Player {
   );
 }
 
-class SkajoBlockDashboard extends StatefulWidget {
-  const SkajoBlockDashboard({super.key});
+class SkyoBlockDashboard extends StatefulWidget {
+  const SkyoBlockDashboard({super.key});
 
   @override
-  State<SkajoBlockDashboard> createState() => _SkajoBlockDashboardState();
+  State<SkyoBlockDashboard> createState() => _SkyoBlockDashboardState();
 }
 
-class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
+class _SkyoBlockDashboardState extends State<SkyoBlockDashboard> {
   final List<Player> _players = [];
 
-  // Feste Matrix für 10 Runden und bis zu 5 Spieler (null = noch nicht gespielt)
   final List<List<int?>> _fixedRounds = List.generate(
     10,
     (_) => List.generate(5, (_) => null),
@@ -68,10 +66,9 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
   @override
   void initState() {
     super.initState();
-    _loadData(); // Lädt die Ewige Kasse beim Starten der App
+    _loadData();
   }
 
-  // --- NEU: Laden & Speichern über SharedPreferences ---
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final String? playersString = prefs.getString('skajo_players');
@@ -82,7 +79,6 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
         _players.clear();
         _players.addAll(decoded.map((item) => Player.fromJson(item)).toList());
 
-        // Runden-Matrix für die geladenen Spieler initialisieren
         for (int i = 0; i < 10; i++) {
           for (int j = 0; j < 5; j++) {
             _fixedRounds[i][j] = j < _players.length ? 0 : null;
@@ -98,7 +94,6 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
     await prefs.setString('skajo_players', encoded);
   }
 
-  // Prüft, ob irgendein Spieler die 100 Punkte erreicht/überschritten hat
   bool get _isGameOver {
     if (_players.isEmpty) return false;
     for (int i = 0; i < _players.length; i++) {
@@ -146,7 +141,7 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
         _fixedRounds[i][playerIndex] = 0;
       }
     });
-    _saveData(); // Speichern nach Spieler-Hinzufügen
+    _saveData();
     Navigator.of(context).pop();
   }
 
@@ -168,7 +163,6 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
     return total;
   }
 
-  // Korrigierte Geld-Berechnung: Höchste Punktzahl verliert!
   double _getPlayerCurrentGameMoney(int playerIndex) {
     if (_players.length < 2) return 0.0;
 
@@ -186,7 +180,6 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
       totalScores.add(MapEntry(i, _getPlayerTotalScore(i)));
     }
 
-    // Sortieren nach Gesamtpunkten ABSTEIGEND (Höchste Punktzahl zuerst = Letzter Platz!)
     totalScores.sort((a, b) => b.value.compareTo(a.value));
 
     int highestTotalScore = totalScores.first.value;
@@ -202,10 +195,10 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
     int myTotalScore = _getPlayerTotalScore(playerIndex);
 
     if (myTotalScore == highestTotalScore) {
-      return 1.00; // Meiste Punkte zahlen 1,00 €
+      return 1.00;
     } else if (secondHighestTotalScore != null &&
         myTotalScore == secondHighestTotalScore) {
-      return 0.50; // Zweitmeiste Punkte zahlen 0,50 €
+      return 0.50;
     }
 
     return 0.0;
@@ -223,7 +216,7 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
         }
       }
     });
-    _saveData(); // Ewige Kasse dauerhaft sichern!
+    _saveData();
     _showSnackBar('Spiel archiviert! Kasse wurde übernommen.');
   }
 
@@ -236,7 +229,7 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
         }
       }
     });
-    _saveData(); // Speicher leeren
+    _saveData();
   }
 
   void _showSnackBar(String message) {
@@ -280,8 +273,7 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
   }
 
   void _openEditRoundDialog(int roundIndex) {
-    if (_players.isEmpty || _isGameOver)
-      return; // Verhindert Eintragungen nach Spielende
+    if (_players.isEmpty || _isGameOver) return;
 
     for (int i = 0; i < _players.length; i++) {
       final currentPoints = _fixedRounds[roundIndex][i];
@@ -363,7 +355,7 @@ class _SkajoBlockDashboardState extends State<SkajoBlockDashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Skajo Ewige Kasse',
+          'Skyo 10er-Block',
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
         ),
         backgroundColor: Colors.teal[700],
